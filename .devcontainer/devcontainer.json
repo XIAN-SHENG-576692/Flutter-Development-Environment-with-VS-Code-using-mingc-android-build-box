@@ -1,0 +1,62 @@
+{
+  "name": "Flutter + Android (Podman)", // The name of the dev container (shown in VS Code)
+
+  "build": {
+    "dockerfile": "Dockerfile" // Use the Dockerfile in this directory to build the environment
+  },
+  
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": { // Install common utilities (official Dev Container feature)
+      "username": "vscode",  // Default user inside the container
+      "uid": "1000",         // User ID
+      "gid": "1000",         // Group ID
+      "installZsh": false    // Disable zsh installation
+    }
+  },
+
+  "remoteUser": "vscode",          // Set "vscode" as the default remote user
+  "updateRemoteUserUID": true,     // Update UID automatically to avoid permission issues
+
+  // Run post-create setup (e.g., flutter doctor, license acceptance)
+  "postCreateCommand": "bash .devcontainer/postCreate.sh",
+
+  // Fix ownership of Flutter directory to avoid permission errors
+  "updateContentCommand": "sudo chown -R vscode:vscode /opt/flutter || true",
+
+  // Default project mount point (Dev Containers usually does this automatically)
+  "workspaceFolder": "/workspace",
+
+  // Default project source mount point
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+
+  // Environment variables for tools inside the container
+  "containerEnv": {
+    "TAR_OPTIONS": "--no-same-owner",                             // Prevent tar from changing file ownership
+    "ANDROID_SDK_ROOT": "/opt/android-sdk",                       // Android SDK path
+    "ANDROID_SDK_HOME": "${containerWorkspaceFolder}",            // Android SDK home path
+    "ANDROID_USER_HOME": "${containerWorkspaceFolder}/.android",  // Android user home path (The parent folder should be ANDROID_SDK_HOME)
+    "GRADLE_USER_HOME": "${containerWorkspaceFolder}/.gradle"     // Gradle user home
+  },
+
+  // Commonly used VS Code extensions for this project
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Dart-Code.dart-code",   // Dart language support
+        "Dart-Code.flutter",     // Flutter support
+        "vscjava.vscode-gradle"  // Gradle support for Android projects
+      ]
+    }
+  },
+
+  // Extra Docker run arguments (for debugging, hardware access, etc.)
+  "runArgs": [
+    "--group-add=keep-groups",                                // Keep original groups
+    "--mount=type=bind,src=/dev/bus/usb,dst=/dev/bus/usb,rw", // Mount USB devices (for adb to detect phones)
+    "--volume=/run/udev:/run/udev:ro",                        // Mount udev device info
+    "--cap-add=SYS_PTRACE",                                   // Enable debugging (ptrace)
+    "--security-opt","seccomp=unconfined",                    // Remove seccomp restrictions for broader syscalls
+    "--device=/dev/kvm"                                       // Allow to run Android Emulator and host supports KVM
+  ]
+}
+
