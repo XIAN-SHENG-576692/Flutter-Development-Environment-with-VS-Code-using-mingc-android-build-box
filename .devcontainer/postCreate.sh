@@ -11,14 +11,16 @@ if [ -d /opt/flutter ]; then
   sudo chown -R "$(id -u)":"$(id -g)" /opt/flutter || true
 fi
 
-# Set workspace ownership to vscode user to prevent root permission issues
-sudo chown -R vscode:vscode /workspace || true
+# Set workspace ownership to devuser to prevent root permission issues
+sudo chown -R devuser:devuser /workspace || true
 
 # Configure Git safe.directory to avoid permission conflicts with Flutter repo
 git config --global --add safe.directory /opt/flutter || true
 
 # Pre-cache Android artifacts for faster builds and reduced runtime fetches
-flutter precache --android || true
+if [ ! -d "$HOME/.pub-cache" ]; then
+  flutter precache --android || true
+fi
 
 # Run diagnostics to validate environment setup
 flutter doctor -v || true
